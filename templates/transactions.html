@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Transactions · SmartPenny{% endblock %}
+
+{% block content %}
+<div>
+  <h1>Transactions</h1>
+  <div class="sub">Search, edit or delete anything you have logged.</div>
+</div>
+
+<div class="tx-layout">
+
+  <!-- LEFT: search, filters, history -->
+  <div class="tx-list">
+    <div class="filters">
+      <form method="GET" class="search-form">
+        <input class="in" type="search" name="q" value="{{ q }}"
+               aria-label="Search transactions" placeholder="Search by description or category">
+        {% if tx_type %}<input type="hidden" name="type" value="{{ tx_type }}">{% endif %}
+        <button class="btn" type="submit">Search</button>
+      </form>
+      <a class="btn{% if tx_type %} ghost{% endif %}" href="{{ url_for('transactions.index', q=q or None) }}">All</a>
+      <a class="btn{% if tx_type != 'income' %} ghost{% endif %}" href="{{ url_for('transactions.index', q=q or None, type='income') }}">Income</a>
+      <a class="btn{% if tx_type != 'expense' %} ghost{% endif %}" href="{{ url_for('transactions.index', q=q or None, type='expense') }}">Expenses</a>
+    </div>
+
+    <div class="card tx-card">
+      <div class="tx-table">
+        <div class="row tx-head">
+          <span class="c-date">DATE</span>
+          <span class="c-desc">DESCRIPTION</span>
+          <span class="c-cat">CATEGORY</span>
+          <span class="c-amt">AMOUNT</span>
+          <span class="c-act"></span>
+        </div>
+
+        {% for t in transactions %}
+        <div class="row">
+          <span class="c-date">{{ t.date.strftime('%b') }} {{ t.date.day }}</span>
+          <span class="c-desc">{{ t.description or "—" }}</span>
+          <span class="c-cat"><span class="pill">{{ t.category.name if t.category else "Income" }}</span></span>
+          <span class="c-amt">
+            {% if t.type == "income" %}
+              <span class="pos">+₹{{ t.amount|inr }}</span>
+            {% else %}
+              <span class="neg">−₹{{ t.amount|inr }}</span>
+            {% endif %}
+          </span>
+          <span class="c-act">
+            <a class="txt" style="display:inline-flex;align-items:center;justify-content:center"
+               href="{{ url_for('transactions.edit', txn_id=t.id) }}">Edit</a>
+            <form class="inline-form" method="POST" action="{{ url_for('transactions.delete', txn_id=t.id) }}"
+                  onsubmit="return confirm('Delete this transaction?');">
+              <button class="txt danger" type="submit">Delete</button>
+            </form>
+          </span>
+        </div>
+        {% else %}
+        <div class="empty">
+          {% if q or tx_type %}No transactions match your search.{% else %}No transactions yet. Add your first one on the right.{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: add / edit form -->
+  <aside class="card panel">
+    <h2 style="font-size:18px">{{ "Edit transaction" if editing else "Add transaction" }}</h2>
+
+    <form method="POST" class="panel"
+          action="{{ url_for('transactions.edit', txn_id=editing.id) if editing else url_for('transactions.add') }}">
+
+      <div class="seg">
+        <input type="radio" name="type" id="type-expense" value="expense" {% if values.type != 'income' %}checked{% endif %}>
+        <label for="type-expense">Expense</label>
+        <input type="radio" name="type" id="type-income" value="income" {% if values.type == 'income' %}checked{% endif %}>
+        <label for="type-income">Income</label>
+      </div>
+
+      <div>
+        <label class="lbl" for="amount">Amount (₹)</label>
+        <input class="in" id="amount" name="amount" type="number" step="0.01" min="0.01"
+               placeholder="0.00" value="{{ values.amount }}" required>
+      </div>
+
+      <div id="category-wrap">
+        <label class="lbl" for="category">Category</label>
+        <select class="in" id="category" name="category_id">
+          <option value="" disabled {% if not values.category_id %}selected{% endif %}>Select a category</option>
+          {% for c in categories %}
+            <option value="{{ c.id }}" {% if values.category_id|string == c.id|string %}selected{% endif %}>{{ c.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="lbl" for="date">Date</label>
+        <input class="in" id="date" name="date" type="date" value="{{ values.date }}" required>
+      </div>
+
+      <div>
+        <label class="lbl" for="description">Note</label>
+        <input class="in" id="description" name="description" maxlength="255"
+               placeholder="What was it for?" value="{{ values.description }}">
+      </div>
+
+      <button class="btn" id="submit-btn" type="submit" data-editing="{{ 'true' if editing else 'false' }}">Save expense</button>
+      {% if editing %}
+        <a class="btn ghost" href="{{ url_for('transactions.index') }}">Cancel</a>
+      {% endif %}
+    </form>
+  </aside>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/transactions.js') }}"></script>
+{% endblock %}

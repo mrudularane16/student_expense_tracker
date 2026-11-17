@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Categories · SmartPenny{% endblock %}
+
+{% block content %}
+<div>
+  <h1>Categories</h1>
+  <div class="sub">See where your money goes.</div>
+</div>
+
+<div class="card">
+  <div class="stack" style="margin-top:0">
+    {% for c in breakdown %}
+    <div>
+      <div class="bar-top">
+        <span>{{ c.name }} <span class="sub">· {{ c.count }} transaction{{ "" if c.count == 1 else "s" }} · {{ c.share }}% of spending</span></span>
+        <span>₹{{ c.total|inr }}</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width: {{ c.percent }}%"></div></div>
+    </div>
+    {% else %}
+    <div class="empty">No expenses logged yet. Add one from the Transactions page.</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

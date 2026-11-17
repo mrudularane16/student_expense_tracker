@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard · SmartPenny{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Dashboard</h1>
+    <div class="sub">Welcome back, {{ current_user.name.split()[0] }}.</div>
+  </div>
+  <a class="btn" href="{{ url_for('transactions.index') }}">+ Add transaction</a>
+</div>
+
+<div class="stat-grid">
+  <div class="card stat-balance">
+    <span class="lbl">Current balance</span>
+    <div class="stat-value">{% if totals.balance < 0 %}−{% endif %}₹{{ totals.balance|inr }}</div>
+  </div>
+  <div class="card">
+    <span class="lbl">Total income</span>
+    <div class="stat-value pos">+₹{{ totals.income|inr }}</div>
+  </div>
+  <div class="card">
+    <span class="lbl">Total expenses</span>
+    <div class="stat-value neg">−₹{{ totals.expense|inr }}</div>
+  </div>
+</div>
+
+<div class="two-col">
+  <div class="card">
+    <h2>Spending by category</h2>
+    <div class="stack">
+      {% for c in breakdown %}
+      <div>
+        <div class="bar-top"><span>{{ c.name }}</span><span>₹{{ c.total|inr }}</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width: {{ c.percent }}%"></div></div>
+      </div>
+      {% else %}
+      <div class="empty">No expenses yet.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h2>Recent transactions</h2>
+      <a href="{{ url_for('transactions.index') }}" class="sub">View all</a>
+    </div>
+    {% for t in recent %}
+    <div class="row">
+      <div>
+        {{ t.description or (t.category.name if t.category else "Income") }}
+        <div class="sub">{{ t.date.strftime('%b') }} {{ t.date.day }} · <span class="pill">{{ t.category.name if t.category else "Income" }}</span></div>
+      </div>
+      {% if t.type == "income" %}
+        <span class="pos">+₹{{ t.amount|inr }}</span>
+      {% else %}
+        <span class="neg">−₹{{ t.amount|inr }}</span>
+      {% endif %}
+    </div>
+    {% else %}
+    <div class="empty">Nothing here yet.</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

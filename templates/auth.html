@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}{{ "Sign up" if mode == "signup" else "Sign in" }} · SmartPenny{% endblock %}
+
+{% block auth_content %}
+<div class="auth-wrap">
+  <section class="auth-hero">
+    <div class="brand">SmartPenny</div>
+    <div class="hero-text">
+      <h1>Track every penny, build every habit.</h1>
+      <p>Log income and expenses, sort them into categories and see your balance at a glance.</p>
+    </div>
+    <div class="sub">Built for tracking student expenses</div>
+  </section>
+
+  <section class="auth-panel">
+    <div class="card auth-card">
+      <div class="tabs">
+        <a class="tab {% if mode == 'signin' %}on{% endif %}" href="{{ url_for('auth.signin') }}">Sign in</a>
+        <a class="tab {% if mode == 'signup' %}on{% endif %}" href="{{ url_for('auth.signup') }}">Sign up</a>
+      </div>
+
+      <div>
+        <h2 class="auth-title">{{ "Create your account" if mode == "signup" else "Welcome back" }}</h2>
+        <div class="sub">
+          {{ "Start tracking in under a minute." if mode == "signup" else "Sign in to see your balance." }}
+        </div>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <form method="POST" class="auth-form">
+        {% if mode == "signup" %}
+        <div>
+          <label class="lbl" for="name">Full name</label>
+          <input class="in" id="name" name="name" placeholder="Your name" value="{{ form.get('name', '') }}" required>
+        </div>
+        {% endif %}
+        <div>
+          <label class="lbl" for="email">Email</label>
+          <input class="in" id="email" name="email" type="email" placeholder="you@college.edu" value="{{ form.get('email', '') }}" required>
+        </div>
+        <div>
+          <label class="lbl" for="password">Password</label>
+          <input class="in" id="password" name="password" type="password"
+                 placeholder="{{ 'At least 8 characters' if mode == 'signup' else 'Your password' }}" required>
+        </div>
+        <button class="btn" style="width:100%" type="submit">
+          {{ "Create account" if mode == "signup" else "Sign in" }}
+        </button>
+      </form>
+
+      <div class="sub" style="text-align:center">
+        {% if mode == "signup" %}
+          Already have an account? <a href="{{ url_for('auth.signin') }}">Sign in</a>
+        {% else %}
+          New here? <a href="{{ url_for('auth.signup') }}">Create an account</a>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

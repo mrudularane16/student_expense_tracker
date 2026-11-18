@@ -3,9 +3,12 @@
 {% block title %}Transactions · SmartPenny{% endblock %}
 
 {% block content %}
-<div>
-  <h1>Transactions</h1>
-  <div class="sub">Search, edit or delete anything you have logged.</div>
+<div class="page-head">
+  <div>
+    <h1>Transactions</h1>
+    <div class="sub">Search, edit or delete anything you have logged.</div>
+  </div>
+  {% include "_month_picker.html" %}
 </div>
 
 <div class="tx-layout">
@@ -14,23 +17,25 @@
   <div class="tx-list">
     <div class="filters">
       <form method="GET" class="search-form">
+        {% for k, v in search_hidden.items() %}
+          <input type="hidden" name="{{ k }}" value="{{ v }}">
+        {% endfor %}
         <input class="in" type="search" name="q" value="{{ q }}"
                aria-label="Search transactions" placeholder="Search by description or category">
-        {% if tx_type %}<input type="hidden" name="type" value="{{ tx_type }}">{% endif %}
         <button class="btn" type="submit">Search</button>
       </form>
-      <a class="btn{% if tx_type %} ghost{% endif %}" href="{{ url_for('transactions.index', q=q or None) }}">All</a>
-      <a class="btn{% if tx_type != 'income' %} ghost{% endif %}" href="{{ url_for('transactions.index', q=q or None, type='income') }}">Income</a>
-      <a class="btn{% if tx_type != 'expense' %} ghost{% endif %}" href="{{ url_for('transactions.index', q=q or None, type='expense') }}">Expenses</a>
+      <a class="btn{% if tx_type %} ghost{% endif %}" href="{{ url_for('transactions.index', **dict(args, type=none)) }}">All</a>
+      <a class="btn{% if tx_type != 'income' %} ghost{% endif %}" href="{{ url_for('transactions.index', **dict(args, type='income')) }}">Income</a>
+      <a class="btn{% if tx_type != 'expense' %} ghost{% endif %}" href="{{ url_for('transactions.index', **dict(args, type='expense')) }}">Expenses</a>
     </div>
 
     <div class="card tx-card">
       <div class="tx-table">
         <div class="row tx-head">
-          <span class="c-date">DATE</span>
+          <a class="c-date sort-link{% if sort_links.date.active %} active{% endif %}" href="{{ sort_links.date.url }}">DATE {{ sort_links.date.arrow }}</a>
           <span class="c-desc">DESCRIPTION</span>
-          <span class="c-cat">CATEGORY</span>
-          <span class="c-amt">AMOUNT</span>
+          <a class="c-cat sort-link{% if sort_links.category.active %} active{% endif %}" href="{{ sort_links.category.url }}">CATEGORY {{ sort_links.category.arrow }}</a>
+          <a class="c-amt sort-link{% if sort_links.amount.active %} active{% endif %}" href="{{ sort_links.amount.url }}">AMOUNT {{ sort_links.amount.arrow }}</a>
           <span class="c-act"></span>
         </div>
 
@@ -51,17 +56,20 @@
                href="{{ url_for('transactions.edit', txn_id=t.id) }}">Edit</a>
             <form class="inline-form" method="POST" action="{{ url_for('transactions.delete', txn_id=t.id) }}"
                   onsubmit="return confirm('Delete this transaction?');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button class="txt danger" type="submit">Delete</button>
             </form>
           </span>
         </div>
         {% else %}
         <div class="empty">
-          {% if q or tx_type %}No transactions match your search.{% else %}No transactions yet. Add your first one on the right.{% endif %}
+          {% if q or tx_type or period.key != 'all' %}No transactions match these filters.{% else %}No transactions yet. Add your first one on the right.{% endif %}
         </div>
         {% endfor %}
       </div>
     </div>
+
+    {% include "_pagination.html" %}
   </div>
 
   <!-- RIGHT: add / edit form -->
@@ -70,6 +78,7 @@
 
     <form method="POST" class="panel"
           action="{{ url_for('transactions.edit', txn_id=editing.id) if editing else url_for('transactions.add') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
       <div class="seg">
         <input type="radio" name="type" id="type-expense" value="expense" {% if values.type != 'income' %}checked{% endif %}>

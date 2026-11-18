@@ -8,24 +8,56 @@
     <h1>Dashboard</h1>
     <div class="sub">Welcome back, {{ current_user.name.split()[0] }}.</div>
   </div>
-  <a class="btn" href="{{ url_for('transactions.index') }}">+ Add transaction</a>
+  <div class="head-actions">
+    {% include "_month_picker.html" %}
+    <a class="btn" href="{{ url_for('transactions.index') }}">+ Add transaction</a>
+  </div>
 </div>
 
 <div class="stat-grid">
   <div class="card stat-balance">
     <span class="lbl">Current balance</span>
     <div class="stat-value">{% if totals.balance < 0 %}−{% endif %}₹{{ totals.balance|inr }}</div>
+    <div class="stat-sub">All time</div>
   </div>
   <div class="card">
     <span class="lbl">Total income</span>
     <div class="stat-value pos">+₹{{ totals.income|inr }}</div>
+    <div class="stat-sub">{{ period.label }}</div>
   </div>
   <div class="card">
     <span class="lbl">Total expenses</span>
     <div class="stat-value neg">−₹{{ totals.expense|inr }}</div>
+    <div class="stat-sub">{{ period.label }}</div>
   </div>
 </div>
 
+<!-- Charts -->
+<div class="two-col">
+  <div class="card">
+    <h2>Spending breakdown</h2>
+    <div class="sub chart-sub">{{ period.label }}</div>
+    {% if chart_data.category.values %}
+      <div class="chart-box"><canvas id="chart-category" role="img" aria-label="Doughnut chart of spending by category for {{ period.label }}"></canvas></div>
+    {% else %}
+      <div class="empty">No expenses in this period.</div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h2>Income vs expenses</h2>
+    <div class="sub chart-sub">Last 6 months</div>
+    <div class="chart-box"><canvas id="chart-monthly" role="img" aria-label="Bar chart of income and expenses for the last 6 months"></canvas></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Balance trend</h2>
+  <div class="sub chart-sub">Balance at the end of each month, last 6 months</div>
+  <div class="chart-box"><canvas id="chart-balance" role="img" aria-label="Line chart of your balance over the last 6 months"></canvas></div>
+</div>
+
+<!-- Lists -->
 <div class="two-col">
   <div class="card">
     <h2>Spending by category</h2>
@@ -36,7 +68,7 @@
         <div class="bar-track"><div class="bar-fill" style="width: {{ c.percent }}%"></div></div>
       </div>
       {% else %}
-      <div class="empty">No expenses yet.</div>
+      <div class="empty">No expenses in this period.</div>
       {% endfor %}
     </div>
   </div>
@@ -44,7 +76,7 @@
   <div class="card">
     <div class="card-head">
       <h2>Recent transactions</h2>
-      <a href="{{ url_for('transactions.index') }}" class="sub">View all</a>
+      <a href="{{ url_for('transactions.index', month=(period.key if period.key != 'all' else none)) }}" class="sub">View all</a>
     </div>
     {% for t in recent %}
     <div class="row">
@@ -59,8 +91,15 @@
       {% endif %}
     </div>
     {% else %}
-    <div class="empty">Nothing here yet.</div>
+    <div class="empty">Nothing in this period.</div>
     {% endfor %}
   </div>
 </div>
+
+<script id="chart-data" type="application/json">{{ chart_data|tojson }}</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 {% endblock %}

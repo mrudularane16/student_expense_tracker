@@ -1,0 +1,30 @@
+{% if pagination.pages > 1 %}
+<nav class="pager" aria-label="Pagination">
+  <span class="sub">Showing {{ pagination.first }}–{{ pagination.last }} of {{ pagination.total }}</span>
+  <div class="pager-links">
+    {% if pagination.has_prev %}
+      <a class="pg" aria-label="Previous page" href="{{ url_for(endpoint, **dict(args, page=pagination.prev_num)) }}">‹</a>
+    {% else %}
+      <span class="pg disabled" aria-hidden="true">‹</span>
+    {% endif %}
+
+    {% for n in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+      {% if n is none %}
+        <span class="pg gap">…</span>
+      {% elif n == pagination.page %}
+        <span class="pg on" aria-current="page">{{ n }}</span>
+      {% else %}
+        <a class="pg" href="{{ url_for(endpoint, **dict(args, page=n)) }}">{{ n }}</a>
+      {% endif %}
+    {% endfor %}
+
+    {% if pagination.has_next %}
+      <a class="pg" aria-label="Next page" href="{{ url_for(endpoint, **dict(args, page=pagination.next_num)) }}">›</a>
+    {% else %}
+      <span class="pg disabled" aria-hidden="true">›</span>
+    {% endif %}
+  </div>
+</nav>
+{% elif pagination.total %}
+<div class="sub">{{ pagination.total }} transaction{{ "" if pagination.total == 1 else "s" }}</div>
+{% endif %}

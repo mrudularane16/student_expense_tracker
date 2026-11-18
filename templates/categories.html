@@ -3,9 +3,12 @@
 {% block title %}Categories · SmartPenny{% endblock %}
 
 {% block content %}
-<div>
-  <h1>Categories</h1>
-  <div class="sub">See where your money goes.</div>
+<div class="page-head">
+  <div>
+    <h1>Categories</h1>
+    <div class="sub">See where your money goes · {{ period.label }}</div>
+  </div>
+  {% include "_month_picker.html" %}
 </div>
 
 <div class="card">
@@ -19,7 +22,7 @@
       <div class="bar-track"><div class="bar-fill" style="width: {{ c.percent }}%"></div></div>
     </div>
     {% else %}
-    <div class="empty">No expenses logged yet. Add one from the Transactions page.</div>
+    <div class="empty">No expenses in this period.</div>
     {% endfor %}
   </div>
 </div>

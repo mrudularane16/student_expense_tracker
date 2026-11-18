@@ -34,6 +34,7 @@
       {% endwith %}
 
       <form method="POST" class="auth-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         {% if mode == "signup" %}
         <div>
           <label class="lbl" for="name">Full name</label>

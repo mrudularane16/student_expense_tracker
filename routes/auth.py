@@ -59,7 +59,7 @@ def signin():
     return render_template("auth.html", mode="signin", form=request.form)
 
 
-@auth_bp.route("/signout")
+@auth_bp.route("/signout", methods=["POST"])
 @login_required
 def signout():
     logout_user()

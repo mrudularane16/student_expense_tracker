@@ -1,70 +1,122 @@
 # SmartPenny
 
-SmartPenny is a lightweight Flask web application designed for students to track day-to-day spending, monitor income, and stay on top of their financial habits. It helps users log transactions, categorize expenses, and review a clear summary of their financial health from a single dashboard.
+SmartPenny is a responsive student expense tracker built with Flask. It helps users record income and expenses, explore spending by category, compare activity over time, and understand their overall financial position through a clean dashboard.
 
-## Features
+## Key Features
 
-- User authentication with sign up and sign in
-- Add, edit, and delete income and expense records
-- Expense category tracking for common student spending areas
-- Dashboard with current balance, total income, and total expenses
-- Category-wise spending breakdown and visual progress bars
-- Search and filter transactions by keyword or type
-- Clean, responsive interface for personal finance management
+- **Secure account management**
+  - Create an account, sign in, and sign out
+  - Passwords are hashed with Werkzeug
+  - Flask-Login protects private routes
+  - CSRF protection is enabled for forms and account actions
+
+- **Income and expense tracking**
+  - Add, edit, and delete transactions
+  - Store amount, date, type, category, and an optional note
+  - Validate positive amounts and expense categories
+  - Search transactions by description, category, or type
+
+- **Powerful transaction history**
+  - Filter by month or view all-time activity
+  - Sort by date, category, or amount
+  - Paginate large transaction histories
+  - Preserve filters while navigating pages and sorting
+
+- **Interactive dashboard**
+  - View all-time balance
+  - View period income and expenses
+  - Explore spending with a doughnut chart
+  - Compare monthly income and expenses
+  - Track end-of-month balance for the last six months
+  - Review recent transactions and top spending categories
+
+- **Category insights**
+  - See spending totals for each default category
+  - View transaction counts and percentage share
+  - Filter category reports by month
+
+- **Modern user experience**
+  - Responsive desktop and mobile layout
+  - Light and dark themes
+  - Theme preference saved in the browser
+  - Indian rupee formatting
+  - Accessible labels and transaction controls
+
+- **Database tooling**
+  - SQLAlchemy data models
+  - Flask-Migrate and Alembic migrations
+  - Automatic seeding of default expense categories
 
 ## Tech Stack
 
-- Python 3
-- Flask
-- Flask-SQLAlchemy
-- Flask-Login
-- Jinja2 templates
-- HTML, CSS, and JavaScript
-- PostgreSQL (default configuration) or SQLite for local development
+| Layer | Technology |
+| --- | --- |
+| Backend | Python, Flask |
+| Database | SQLAlchemy, PostgreSQL or SQLite |
+| Authentication | Flask-Login, Werkzeug password hashing |
+| Forms and security | Flask-WTF, CSRF protection |
+| Migrations | Flask-Migrate, Alembic |
+| Frontend | Jinja2, HTML, CSS, JavaScript |
+| Charts | Chart.js |
 
 ## Project Structure
 
 ```text
 student-expense-tracker/
-├── app.py                  # App factory and entry point
-├── config.py               # Application configuration
-├── extensions.py           # Flask extensions instance
-├── models.py               # Database models
+├── app.py                  # Flask application factory and startup
+├── config.py               # Environment-based configuration
+├── extensions.py           # Database, auth, migrations, and CSRF extensions
+├── models.py               # User, Category, and Transaction models
+├── utils.py                # Period, totals, formatting, and chart calculations
 ├── requirements.txt        # Python dependencies
-├── utils.py                # Utility functions for finance calculations
-├── instance/               # Local database files
-├── routes/                 # Blueprints for auth, dashboard, transactions, categories
-├── static/                 # CSS and JavaScript assets
-├── templates/              # HTML templates
-├── README.md               # Project documentation
-└── .env.example            # Optional example environment file (if added locally)
+├── migrations/             # Alembic database migrations
+├── routes/
+│   ├── auth.py             # Sign-up, sign-in, and sign-out
+│   ├── dashboard.py        # Dashboard totals and chart data
+│   ├── transactions.py     # Transaction CRUD, search, sorting, pagination
+│   └── categories.py       # Category spending report
+├── static/
+│   ├── css/                # Application styles and themes
+│   └── js/                 # Theme and dashboard JavaScript
+└── templates/
+    ├── base.html           # Shared layout and navigation
+    ├── auth.html           # Sign-up and sign-in page
+    ├── dashboard.html      # Dashboard and charts
+    ├── transactions.html   # Transaction history and editor
+    ├── categories.html     # Category spending report
+    └── _*.html             # Reusable month and pagination components
 ```
 
 ## Getting Started
 
+### Prerequisites
+
+- Python 3.10 or newer
+- PostgreSQL, or SQLite for a local setup
+- A virtual environment manager
+
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/student-expense-tracker.git
-cd student-expense-tracker
+git clone https://github.com/mrudularane16/student_expense_tracker.git
+cd student_expense_tracker
 ```
 
-### 2. Create a virtual environment
+### 2. Create and activate a virtual environment
+
+**Windows**
+
+```powershell
+python -m venv venv
+venv\Scripts\activate
+```
+
+**macOS or Linux**
 
 ```bash
-python -m venv .venv
+python3 -m venv venv
+source venv/bin/activate
 ```
-
-Activate it:
-
-- Windows:
-  ```bash
-  .venv\Scripts\activate
-  ```
-- macOS/Linux:
-  ```bash
-  source .venv/bin/activate
-  ```
 
 ### 3. Install dependencies
 
@@ -74,69 +126,43 @@ pip install -r requirements.txt
 
 ### 4. Configure environment variables
 
-Create a `.env` file in the project root and set the required variables:
+Create a `.env` file in the project root:
 
 ```env
-SECRET_KEY=your-secret-key
+SECRET_KEY=replace-with-a-long-random-secret
 DATABASE_URL=sqlite:///instance/student_expense_tracker.db
 ```
 
-You can also use PostgreSQL if preferred:
+For PostgreSQL:
 
 ```env
-SECRET_KEY=your-secret-key
-DATABASE_URL=postgresql://postgres:root@localhost:5432/expense_tracker
+SECRET_KEY=replace-with-a-long-random-secret
+DATABASE_URL=postgresql://postgres:password@localhost:5432/expense_tracker
 ```
 
-> The project defaults to PostgreSQL in `config.py`, but SQLite is easier for local development and testing.
+The application also uses the PostgreSQL URL above as its default if `DATABASE_URL` is not set. Always use a strong, unique `SECRET_KEY` outside local development.
 
-### 5. Run the application
+### 5. Create or upgrade the database
+
+Apply the included migration:
+
+```bash
+flask --app app db upgrade
+```
+
+Default expense categories are seeded automatically when the categories table is available and empty.
+
+### 6. Run the application
 
 ```bash
 python app.py
 ```
 
-Then open:
+Open `http://127.0.0.1:5000` in a browser.
 
-```text
-http://127.0.0.1:5000/
-```
+## Default Categories
 
-## How It Works
-
-### Authentication
-
-Users can create an account, sign in, and maintain a personal financial profile. The app uses Flask-Login to manage authenticated sessions securely.
-
-### Transactions
-
-Each transaction includes:
-
-- type: income or expense
-- amount
-- category
-- date
-- description
-
-Expense entries are tied to categories such as Food, Transportation, Shopping, Bills, Entertainment, Healthcare, and Education.
-
-### Dashboard
-
-The dashboard provides a quick snapshot of:
-
-- current balance
-- total income
-- total expenses
-- recent transactions
-- spending by category
-
-### Categories and Insights
-
-The categories page aggregates spending data to show how much each category contributes to a user’s total expenses.
-
-## Default Expense Categories
-
-The app seeds the following categories automatically:
+SmartPenny creates these expense categories automatically:
 
 - Food
 - Transportation
@@ -146,8 +172,46 @@ The app seeds the following categories automatically:
 - Healthcare
 - Education
 
+## How the Main Features Work
 
+### Transaction history
 
+The transaction page supports keyword search, income/expense filtering, month selection, date/category/amount sorting, and pagination. The add and edit form shares the same validation flow to keep transaction data consistent.
 
+### Dashboard analysis
+
+Dashboard totals can be filtered by month while the current balance remains all-time. Chart.js renders the category, monthly comparison, and balance trend visualizations in light or dark mode.
+
+### Period navigation
+
+The month picker lists available transaction months plus the current month. Users can move to a previous or next month or switch to all-time activity.
+
+### Database migrations
+
+Use Flask-Migrate to manage schema changes:
+
+```bash
+flask --app app db migrate -m "describe the change"
+flask --app app db upgrade
+```
+
+## Security Notes
+
+- Use HTTPS when deploying the application.
+- Set a strong `SECRET_KEY` through environment variables.
+- Store database credentials outside source control.
+- Do not commit `.env`, virtual environments, temporary databases, or private database files.
+- CSRF protection is applied to authenticated forms and mutation actions.
+
+## Running in Production
+
+For deployment, use a production WSGI server instead of Flask's debug server. Set `SECRET_KEY` and `DATABASE_URL` securely, run migrations, and configure HTTPS.
+
+Example package:
+
+```bash
+pip install gunicorn
+gunicorn "app:app"
+```
 
 

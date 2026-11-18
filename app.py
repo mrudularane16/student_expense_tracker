@@ -1,7 +1,9 @@
-from flask import Flask
+from flask import Flask, flash, redirect, request, url_for
+from flask_wtf.csrf import CSRFError
+from sqlalchemy import inspect
 
 from config import Config
-from extensions import db, login_manager
+from extensions import db, login_manager, migrate, csrf
 from models import Category
 from utils import inr
 
@@ -21,11 +23,10 @@ def create_app():
     app.config.from_object(Config)
 
     db.init_app(app)
+    migrate.init_app(app, db)
     login_manager.init_app(app)
-
-    @app.template_filter("inr")
-    def inr_filter(value):
-        return inr(value)
+    csrf.init_app(app)
+    app.jinja_env.filters["inr"] = inr
 
     from routes.auth import auth_bp
     from routes.dashboard import dashboard_bp
@@ -37,9 +38,14 @@ def create_app():
     app.register_blueprint(transactions_bp)
     app.register_blueprint(categories_bp)
 
+    @app.errorhandler(CSRFError)
+    def handle_csrf_error(e):
+        flash("Your session expired or the form was invalid. Please try again.", "error")
+        return redirect(request.referrer or url_for("auth.signin"))
+
+    # Seed the default categories once (only if the table already exists).
     with app.app_context():
-        db.create_all()
-        if Category.query.count() == 0:
+        if inspect(db.engine).has_table("categories") and Category.query.count() == 0:
             db.session.add_all([Category(name=n) for n in EXPENSE_CATEGORIES])
             db.session.commit()
 

@@ -213,5 +213,12 @@ Example package:
 pip install gunicorn
 gunicorn "app:app"
 ```
+Screenshots of the application:
+
+<img width="957" height="556" alt="Screenshot 2026-11-18 152549" src="https://github.com/user-attachments/assets/26206a95-0c12-4267-9f5c-061004621a93" />
+<img width="956" height="557" alt="Screenshot 2026-11-18 152723" src="https://github.com/user-attachments/assets/fb397634-ba35-40c0-9938-5ca0cbc355d0" />
+<img width="954" height="561" alt="Screenshot 2026-11-18 152705" src="https://github.com/user-attachments/assets/93532726-a831-4fa3-a967-872514bd6e91" />
+<img width="958" height="560" alt="Screenshot 2026-11-18 152645" src="https://github.com/user-attachments/assets/97fd5c92-84d2-42df-8fef-3e5bbb93721d" />
+<img width="956" height="554" alt="Screenshot 2026-11-18 152611" src="https://github.com/user-attachments/assets/f68f7667-b8fa-45fd-9a00-45521b9b2cbb" />
 
 
